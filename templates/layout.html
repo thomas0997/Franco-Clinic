@@ -1,0 +1,80 @@
+{% from "_icons.html" import icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Franco Clinic{% endblock %} · Dra. Helen Franco Medical Clinic</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <meta name="theme-color" content="#6f1a2e">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% block shell %}
+  {% set section = request.path.split('/')[1] %}
+  <header class="appbar">
+    <div class="appbar-inner">
+      <a class="brand" href="/index">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="">
+        <span class="brand-name">Franco Clinic<small>Dra. Helen Franco</small></span>
+      </a>
+
+      <nav class="nav" aria-label="Main">
+        <a href="/index" {% if section == 'index' %}aria-current="page"{% endif %}>Dashboard</a>
+        <a href="/patients" {% if section in ['patients','add','search','view','edit','register','results'] %}aria-current="page"{% endif %}>Patients</a>
+        <a href="/inventory" {% if section == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
+        <a href="/upload" {% if section == 'upload' %}aria-current="page"{% endif %}>Import &amp; export</a>
+      </nav>
+
+      {% if session.get('name') %}
+      <div class="user-menu">
+        <button class="user-btn" type="button" data-user-btn aria-haspopup="true" aria-expanded="false">
+          <span class="avatar">{{ session['name'][:1]|upper }}</span>
+          <span class="user-label">{{ session['name'] }}</span>
+        </button>
+        <div class="user-pop" data-user-pop>
+          <a href="/reg1">Add a staff account</a>
+          <hr>
+          <a class="signout" href="/logout">Sign out</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <svg class="pulse-rule" viewBox="0 0 1200 14" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="pulseGrad" x1="0" x2="1">
+          <stop offset="0" stop-color="#6f1a2e"/><stop offset=".5" stop-color="#8a2238"/><stop offset="1" stop-color="#d4a440"/>
+        </linearGradient>
+      </defs>
+      <path stroke="url(#pulseGrad)" d="M0 7 H880 L888 7 L894 4 L900 7 L906 7 L911 1 L917 13 L921 7 L930 7 L936 4 L942 7 H1200"/>
+    </svg>
+  </header>
+
+  <main class="page {% block page_class %}{% endblock %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flashes" role="status">
+        {% for category, message in messages %}
+        <div class="flash {{ 'error' if category == 'error' else '' }}">
+          {{ icon('alert' if category == 'error' else 'check') }}<span>{{ message }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% block body %}{% endblock %}{% endblock %}
+  </main>
+{% endblock %}
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

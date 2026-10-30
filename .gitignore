@@ -218,3 +218,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# app data, never commit
+*.db
+*.sqlite3
+*.csv
+flask_session/
+instance/
+.env
+backups/
+!sample_data/*.csv

@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon, trace %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Welcome back, {{ name }}</h1>
+  <p>Dra. Helen Franco Medical Clinic</p>
+  <form class="search" action="/search" method="get" role="search">
+    {{ icon('search') }}
+    <label class="visually-hidden" for="q">Find a patient</label>
+    <input class="input" id="q" type="search" name="query" placeholder="Find a patient by name" required autocomplete="off">
+    <button class="btn btn-primary" type="submit">Find patient</button>
+  </form>
+  {{ trace() }}
+</section>
+
+<div class="stats">
+  <a class="stat" href="/view">
+    <span class="value">{{ "{:,}".format(patient_count) }}</span>
+    <span class="label">Patients on record</span>
+  </a>
+  <a class="stat" href="/inventory/view">
+    <span class="value">{{ med_count }}</span>
+    <span class="label">Medicines in inventory</span>
+  </a>
+  <a class="stat {{ 'alert' if low_stock|length else '' }}" href="/inventory/view?sort=asc">
+    <span class="value">{{ low_stock|length }}</span>
+    <span class="label">Running low (5 or fewer)</span>
+  </a>
+</div>
+
+<div class="split">
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Restock soon</h2>
+      <a href="/inventory/view?sort=asc">All stock</a>
+    </div>
+    {% if low_stock %}
+    <ul class="mini-list">
+      {% for med in low_stock[:8] %}
+      <li>
+        <span>{{ med.name }}</span>
+        {% if med.quantity <= 0 %}
+          <span class="badge out">Out of stock</span>
+        {% else %}
+          <span class="badge low">{{ med.quantity }} left</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% if low_stock|length > 8 %}<p class="muted" style="margin-top:10px">and {{ low_stock|length - 8 }} more</p>{% endif %}
+    {% else %}
+    <div class="empty"><strong>Stock looks healthy</strong>Nothing is at 5 or fewer.</div>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Recent stock changes</h2>
+      <a href="/inventory/logs">Full history</a>
+    </div>
+    {% if recent_logs %}
+    <ul class="mini-list">
+      {% for log in recent_logs %}
+      <li>
+        <span>
+          {{ log.medicine_name }}
+          <span class="meta" style="display:block">{{ log.user or "Unknown" }}, {{ (log.timestamp or '')[:10] }}</span>
+        </span>
+        <span class="change {{ 'up' if log.change > 0 else 'down' }}">{{ '%+d'|format(log.change) }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty"><strong>No changes yet</strong>Adjustments to stock show up here.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

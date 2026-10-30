@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}All patients{% endblock %}
+
+{% block content %}
+<a class="back" href="/patients">{{ icon('back') }}Patients</a>
+<div class="page-head">
+  <div>
+    <h1>All patients</h1>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="/add">{{ icon('plus') }}Add patient</a>
+  </div>
+</div>
+
+{% if patients %}
+<div class="table-tools">
+  <input class="input" type="search" placeholder="Filter by name, ID or address" aria-label="Filter patients" data-filter="#patients" data-count="#patientCount">
+  <span class="count" id="patientCount" data-noun="patients">{{ patients|length }} patients</span>
+</div>
+
+<div class="table-wrap scroll">
+  <table class="data" id="patients">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Date of birth</th><th class="hide-sm">Address</th><th><span class="visually-hidden">Actions</span></th></tr>
+    </thead>
+    <tbody>
+      {% for patient in patients %}
+      <tr>
+        <td class="id num">{{ patient.id }}</td>
+        <td class="name">{{ patient.firstName }} {{ patient.lastName }}</td>
+        <td class="num">{{ patient.dob }}</td>
+        <td class="hide-sm">{{ patient.address }}</td>
+        <td class="actions"><a class="btn btn-secondary btn-sm" href="/edit/{{ patient.id }}" aria-label="Edit {{ patient.firstName }} {{ patient.lastName }}">{{ icon('edit') }}<span class="label">Edit</span></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel empty">
+  <strong>No patients yet</strong>
+  Add the first record, or import a CSV.
+  <div><a class="btn btn-primary" href="/add">{{ icon('plus') }}Add patient</a></div>
+</div>
+{% endif %}
+{% endblock %}

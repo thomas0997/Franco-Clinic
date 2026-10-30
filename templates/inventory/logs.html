@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Stock history{% endblock %}
+
+{% block content %}
+<a class="back" href="/inventory">{{ icon('back') }}Inventory</a>
+<div class="page-head">
+  <div>
+    <h1>Stock history</h1>
+    <p>Changes made on the same day to the same medicine are combined into one line.</p>
+  </div>
+  {% if logs %}
+  <div class="actions">
+    <form method="post" action="/inventory/logs/clear" data-confirm="Delete the entire stock history? Counts stay the same, but this record can't be recovered.">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">{{ icon('trash') }}Clear history</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+{% if logs %}
+<div class="table-tools">
+  <input class="input" type="search" placeholder="Filter by medicine, person or date" aria-label="Filter history" data-filter="#logs" data-count="#logCount">
+  <span class="count" id="logCount" data-noun="entries">{{ logs|length }} entries</span>
+</div>
+
+<div class="table-wrap scroll">
+  <table class="data" id="logs">
+    <thead><tr><th>Medicine</th><th class="right">Change</th><th>Date</th><th class="hide-sm">Time</th><th>By</th></tr></thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td class="name">{{ log.medicine_name }}</td>
+        <td class="right"><span class="change {{ 'up' if log.change > 0 else 'down' }}">{{ '%+d'|format(log.change) }}</span></td>
+        <td class="num">{{ (log.timestamp or '')[:10] }}</td>
+        <td class="num hide-sm">{{ (log.timestamp or '')[11:16] }}</td>
+        <td>{{ log.user or "Unknown" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel empty">
+  <strong>No stock changes recorded</strong>
+  Adding medicine or using − and + on the stock list creates entries here.
+  <div><a class="btn btn-secondary" href="/inventory/view">Go to all stock</a></div>
+</div>
+{% endif %}
+{% endblock %}

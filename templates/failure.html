@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Patient not added{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<div class="panel result">
+  <div class="mark error">{{ icon('alert') }}</div>
+  <h1>Patient not added</h1>
+  <p>First name, last name, and date of birth are all required.</p>
+  <div class="form-actions">
+    <a class="btn btn-primary" href="/add">Back to the form</a>
+  </div>
+</div>
+{% endblock %}

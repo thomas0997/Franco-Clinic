@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon, trace %}
+{% block title %}Sign in{% endblock %}
+
+{% block shell %}
+<div class="auth">
+  <section class="auth-side">
+    <div style="position:relative">
+      <img class="mark" src="{{ url_for('static', filename='logo.png') }}" alt="Franco Clinic logo">
+      <h1>Dra. Helen Franco Medical Clinic</h1>
+      <p>Patient records and medicine stock for the clinic team.</p>
+    </div>
+    <p class="auth-foot">Produced by Auron Inc.</p>
+    {{ trace() }}
+  </section>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      <h2>Sign in</h2>
+      <p>Use the staff account the clinic admin gave you.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flashes" role="alert">
+          {% for category, message in messages %}
+          <div class="flash {{ 'error' if category == 'error' else '' }}">{{ icon('alert' if category == 'error' else 'check') }}<span>{{ message }}</span></div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      <form class="form" method="post" autocomplete="off">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="username">Username</label>
+          <div class="input-icon">
+            {{ icon('user') }}
+            <input id="username" type="text" name="username" required autofocus autocapitalize="off">
+          </div>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-icon">
+            {{ icon('lock') }}
+            <input id="password" type="password" name="password" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+      </form>
+
+      <p class="note">New to the clinic? Ask the admin to create your account.</p>
+    </div>
+  </main>
+</div>
+{% endblock %}

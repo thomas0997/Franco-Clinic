@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Medicine added{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<div class="panel result">
+  <div class="mark">{{ icon('check') }}</div>
+  <h1>Medicine added</h1>
+  <p>The count is saved and logged in stock history.</p>
+  <div class="form-actions">
+    <a class="btn btn-primary" href="/inventory/add">{{ icon('plus') }}Add another</a>
+    <a class="btn btn-secondary" href="/inventory/view">See all stock</a>
+  </div>
+</div>
+{% endblock %}

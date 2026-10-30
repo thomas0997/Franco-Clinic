@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Import & export{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Import &amp; export</h1>
+    <p>Download the clinic's records as CSV for backup, or load a CSV to replace them.</p>
+  </div>
+</div>
+
+<div class="io">
+  <section class="panel">
+    <h2>Patients</h2>
+    <p>Columns: First Name, Last Name, D.O.B (MM/DD/YYYY), Address.</p>
+
+    <div class="step">
+      <h3>Export</h3>
+      <p>Save every patient record to a CSV file.</p>
+      <form method="post">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn btn-secondary" type="submit" name="action" value="export_patients">{{ icon('download') }}Export patients</button>
+      </form>
+    </div>
+
+    <div class="step">
+      <h3>Import</h3>
+      <div class="warn">{{ icon('alert') }}<span>Importing deletes all current patients and resets ID numbers. Export a backup first.</span></div>
+      <form method="post" enctype="multipart/form-data" data-confirm="Replace ALL patient records with this file? This can't be undone.">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <label class="visually-hidden" for="pfile">Patients CSV file</label>
+        <input class="file-input" id="pfile" type="file" name="file" accept=".csv" required>
+        <button class="btn btn-danger" type="submit" name="action" value="upload_patients">{{ icon('upload') }}Replace patients</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Inventory</h2>
+    <p>Columns: Name, Quantity.</p>
+
+    <div class="step">
+      <h3>Export</h3>
+      <p>Save the current stock list to a CSV file.</p>
+      <form method="post">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn btn-secondary" type="submit" name="action" value="export_inventory">{{ icon('download') }}Export inventory</button>
+      </form>
+    </div>
+
+    <div class="step">
+      <h3>Import</h3>
+      <div class="warn">{{ icon('alert') }}<span>Importing replaces the whole stock list. Export a backup first.</span></div>
+      <form method="post" enctype="multipart/form-data" data-confirm="Replace the whole inventory with this file? This can't be undone.">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <label class="visually-hidden" for="ifile">Inventory CSV file</label>
+        <input class="file-input" id="ifile" type="file" name="file" accept=".csv" required>
+        <button class="btn btn-danger" type="submit" name="action" value="upload_inventory">{{ icon('upload') }}Replace inventory</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

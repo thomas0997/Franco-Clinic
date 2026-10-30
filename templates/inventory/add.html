@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Add medicine{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<a class="back" href="/inventory">{{ icon('back') }}Inventory</a>
+<div class="page-head">
+  <div>
+    <h1>Add medicine</h1>
+    <p>If the medicine is already listed, its count is replaced with the number you enter.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="form" action="/inventory/add" method="post" autocomplete="off">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="name">Medicine and strength</label>
+      <input id="name" name="name" type="text" placeholder="Irbesartan 150mg" required autofocus>
+      <span class="hint">Include the milligrams so each strength stays separate.</span>
+    </div>
+    <div class="field">
+      <label for="quantity">Quantity on hand</label>
+      <input id="quantity" name="quantity" type="number" min="0" inputmode="numeric" required style="max-width:200px">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">{{ icon('plus') }}Add medicine</button>
+      <a class="btn btn-ghost" href="/inventory">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

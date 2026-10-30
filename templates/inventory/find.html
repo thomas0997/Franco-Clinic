@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Find a medicine{% endblock %}
+
+{% block content %}
+<a class="back" href="/inventory">{{ icon('back') }}Inventory</a>
+<div class="page-head">
+  <div>
+    <h1>Find a medicine</h1>
+  </div>
+</div>
+
+<form class="search" action="/inventory/find" method="post" role="search" style="max-width:680px;margin-bottom:24px">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  {{ icon('search') }}
+  <label class="visually-hidden" for="q">Medicine name</label>
+  <input class="input" id="q" type="search" name="query" value="{{ request.form.get('query', '') }}" placeholder="e.g. Amlodipine" required autofocus autocomplete="off">
+  <button class="btn btn-primary" type="submit">Search</button>
+</form>
+
+{% if meds %}
+<p class="count" style="margin-bottom:12px">{{ meds|length }} {{ 'match' if meds|length == 1 else 'matches' }} for “{{ request.form.get('query') }}”</p>
+<div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Medicine</th><th>Status</th><th class="right">Quantity</th></tr></thead>
+    <tbody>
+      {% for med in meds %}
+      <tr data-med>
+        <td class="name">{{ med.name }}</td>
+        <td>
+          {% if med.quantity <= 0 %}<span class="badge out">Out of stock</span>
+          {% elif med.quantity <= 5 %}<span class="badge low">Low</span>
+          {% else %}<span class="badge ok">In stock</span>{% endif %}
+        </td>
+        <td class="right">
+          <div class="stepper" data-name="{{ med.name }}">
+            <button type="button" data-action="remove" aria-label="Take one {{ med.name }} out">{{ icon('minus') }}</button>
+            <output aria-live="polite">{{ med.quantity }}</output>
+            <button type="button" data-action="add" aria-label="Add one {{ med.name }}">{{ icon('plus') }}</button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% elif searched %}
+<div class="panel empty">
+  <strong>No medicine matches “{{ request.form.get('query') }}”</strong>
+  Try a shorter part of the name, or add it to the inventory.
+  <div><a class="btn btn-secondary" href="/inventory/add">{{ icon('plus') }}Add medicine</a></div>
+</div>
+{% endif %}
+{% endblock %}

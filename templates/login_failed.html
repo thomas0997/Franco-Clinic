@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Sign-in failed{% endblock %}
+
+{% block shell %}
+<main class="page page-narrow">
+  <div class="panel result">
+    <div class="mark error">{{ icon('alert') }}</div>
+    <h1>Wrong username or password</h1>
+    <p>Check your details and try again.</p>
+    <div class="form-actions"><a class="btn btn-primary" href="/login">Back to sign in</a></div>
+  </div>
+</main>
+{% endblock %}

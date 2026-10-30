@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Add a staff account{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<a class="back" href="/index">{{ icon('back') }}Dashboard</a>
+<div class="page-head">
+  <div>
+    <h1>Add a staff account</h1>
+    <p>The new user signs in with this username and password.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="form" method="post" autocomplete="off">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" required autofocus autocapitalize="off">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required autocomplete="new-password">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">{{ icon('user-plus') }}Create account</button>
+      <a class="btn btn-ghost" href="/index">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

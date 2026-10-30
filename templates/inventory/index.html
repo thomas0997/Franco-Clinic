@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Inventory{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Inventory</h1>
+    <p>Check what's on the shelf and log what goes in or out.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="/inventory/add">{{ icon('plus') }}Add medicine</a>
+  </div>
+</div>
+
+<div class="hub">
+  <section class="panel">
+    <h2 style="margin-bottom:14px">Find a medicine</h2>
+    <form class="search" action="/inventory/find" method="post" role="search">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      {{ icon('search') }}
+      <label class="visually-hidden" for="q">Medicine name</label>
+      <input class="input" id="q" type="search" name="query" placeholder="e.g. Amlodipine" required autofocus autocomplete="off">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+    <p class="muted" style="margin-top:12px;font-size:.92rem">Part of a name works too: “metf” finds Metformin.</p>
+  </section>
+
+  <section class="panel">
+    <div class="links">
+      <a class="link-row" href="/inventory/view">
+        <span class="ico">{{ icon('pill') }}</span>
+        <span><strong>All stock</strong><span>Every medicine and its count</span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      <a class="link-row" href="/inventory/add">
+        <span class="ico">{{ icon('plus') }}</span>
+        <span><strong>Add medicine</strong><span>New item or reset a count</span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      <a class="link-row" href="/inventory/logs">
+        <span class="ico gold">{{ icon('clock') }}</span>
+        <span><strong>Stock history</strong><span>Who changed what, and when</span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+    </div>
+  </section>
+</div>
+{% endblock %}

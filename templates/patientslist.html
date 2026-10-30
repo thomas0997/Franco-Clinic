@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Patients{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Patients</h1>
+    <p>Look up a record, register someone new, or browse the full list.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="/add">{{ icon('plus') }}Add patient</a>
+  </div>
+</div>
+
+<div class="hub">
+  <section class="panel">
+    <h2 style="margin-bottom:14px">Find a patient</h2>
+    <form class="search" action="/search" method="get" role="search">
+      {{ icon('search') }}
+      <label class="visually-hidden" for="q">Patient name</label>
+      <input class="input" id="q" type="search" name="query" placeholder="First name, last name, or both" required autofocus autocomplete="off">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+    <p class="muted" style="margin-top:12px;font-size:.92rem">Type a first and last name together to narrow results, e.g. “Olivia Abesamis”.</p>
+  </section>
+
+  <section class="panel">
+    <div class="links">
+      <a class="link-row" href="/add">
+        <span class="ico">{{ icon('user-plus') }}</span>
+        <span><strong>Add patient</strong><span>Register a new record</span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      <a class="link-row" href="/view">
+        <span class="ico">{{ icon('list') }}</span>
+        <span><strong>All patients</strong><span>Browse and edit every record</span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      <a class="link-row" href="/upload">
+        <span class="ico gold">{{ icon('swap') }}</span>
+        <span><strong>Import &amp; export</strong><span>Move patient lists in or out as CSV</span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+    </div>
+  </section>
+</div>
+{% endblock %}

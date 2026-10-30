@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Add patient{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<a class="back" href="/patients">{{ icon('back') }}Patients</a>
+<div class="page-head">
+  <div>
+    <h1>Add a patient</h1>
+    <p>The patient gets the next free ID number.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="form" action="/register" method="post" autocomplete="off">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="form-row">
+      <div class="field">
+        <label for="firstName">First name</label>
+        <input id="firstName" name="firstName" type="text" required autofocus>
+      </div>
+      <div class="field">
+        <label for="lastName">Last name</label>
+        <input id="lastName" name="lastName" type="text" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="dob">Date of birth</label>
+      <input id="dob" name="dob" type="date" required>
+    </div>
+    <div class="field">
+      <label for="address">Address</label>
+      <input id="address" name="address" type="text" required>
+      <span class="hint">Barangay or town is enough.</span>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">{{ icon('plus') }}Add patient</button>
+      <a class="btn btn-ghost" href="/patients">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

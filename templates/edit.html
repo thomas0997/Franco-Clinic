@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Edit patient{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<a class="back" href="/view">{{ icon('back') }}All patients</a>
+<div class="page-head">
+  <div>
+    <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
+    <p>Patient ID {{ patient.id }}</p>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="form" method="post" autocomplete="off">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="form-row">
+      <div class="field">
+        <label for="firstName">First name</label>
+        <input id="firstName" name="firstName" value="{{ patient.firstName }}" required>
+      </div>
+      <div class="field">
+        <label for="lastName">Last name</label>
+        <input id="lastName" name="lastName" value="{{ patient.lastName }}" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="dob">Date of birth</label>
+      <input id="dob" name="dob" value="{{ patient.dob }}" required>
+    </div>
+    <div class="field">
+      <label for="address">Address</label>
+      <input id="address" name="address" value="{{ patient.address or '' }}">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">{{ icon('check') }}Save changes</button>
+      <a class="btn btn-ghost" href="/view">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Find a patient{% endblock %}
+
+{% block content %}
+<a class="back" href="/patients">{{ icon('back') }}Patients</a>
+<div class="page-head">
+  <div>
+    <h1>Find a patient</h1>
+  </div>
+</div>
+
+<form class="search" action="/search" method="get" role="search" style="max-width:680px;margin-bottom:24px">
+  {{ icon('search') }}
+  <label class="visually-hidden" for="q">Patient name</label>
+  <input class="input" id="q" type="search" name="query" value="{{ request.args.get('query', '') }}" placeholder="First name, last name, or both" required autofocus autocomplete="off">
+  <button class="btn btn-primary" type="submit">Search</button>
+</form>
+
+{% if searched %}
+  {% if patients %}
+  <p class="count" style="margin-bottom:12px">{{ patients|length }} {{ 'match' if patients|length == 1 else 'matches' }} for “{{ request.args.get('query') }}”</p>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Date of birth</th><th class="hide-sm">Address</th><th><span class="visually-hidden">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        {% for patient in patients %}
+        <tr>
+          <td class="id num">{{ patient.id }}</td>
+          <td class="name">{{ patient.firstName }} {{ patient.lastName }}</td>
+          <td class="num">{{ patient.dob }}</td>
+          <td class="hide-sm">{{ patient.address }}</td>
+          <td class="actions">
+            <a class="btn btn-secondary btn-sm" href="/edit/{{ patient.id }}" aria-label="Edit {{ patient.firstName }} {{ patient.lastName }}">{{ icon('edit') }}<span class="label">Edit</span></a>
+            <form action="/remove/{{ patient.id }}" method="post" data-confirm="Remove {{ patient.firstName }} {{ patient.lastName }}? This can't be undone.">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <button class="icon-btn danger" type="submit" aria-label="Remove {{ patient.firstName }} {{ patient.lastName }}" title="Remove">{{ icon('trash') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="panel empty">
+    <strong>No patients match “{{ request.args.get('query') }}”</strong>
+    Check the spelling, or search by last name only.
+    <div><a class="btn btn-secondary" href="/add">{{ icon('plus') }}Add as new patient</a></div>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

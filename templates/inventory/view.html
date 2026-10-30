@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}All stock{% endblock %}
+
+{% block content %}
+<a class="back" href="/inventory">{{ icon('back') }}Inventory</a>
+<div class="page-head">
+  <div>
+    <h1>All stock</h1>
+    <p>Use − and + to log each unit that goes out or comes in.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="/inventory/add">{{ icon('plus') }}Add medicine</a>
+  </div>
+</div>
+
+{% if meds %}
+<div class="table-tools">
+  <input class="input" type="search" placeholder="Filter medicines" aria-label="Filter medicines" data-filter="#stock" data-count="#stockCount">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span class="count" id="stockCount" data-noun="medicines">{{ meds|length }} medicines</span>
+    <nav class="segmented" aria-label="Sort by quantity">
+      <a href="{{ url_for('inventory_view', sort='desc') }}" {% if sort != 'asc' %}aria-current="true"{% endif %}>Most first</a>
+      <a href="{{ url_for('inventory_view', sort='asc') }}" {% if sort == 'asc' %}aria-current="true"{% endif %}>Fewest first</a>
+    </nav>
+  </div>
+</div>
+
+<div class="table-wrap scroll">
+  <table class="data" id="stock">
+    <thead><tr><th>Medicine</th><th class="hide-sm">Status</th><th class="right">Quantity</th><th><span class="visually-hidden">Remove</span></th></tr></thead>
+    <tbody>
+      {% for med in meds %}
+      <tr data-med>
+        <td class="name">{{ med.name }}</td>
+        <td class="hide-sm">
+          {% if med.quantity <= 0 %}<span class="badge out">Out of stock</span>
+          {% elif med.quantity <= 5 %}<span class="badge low">Low</span>
+          {% else %}<span class="badge ok">In stock</span>{% endif %}
+        </td>
+        <td class="right">
+          <div class="stepper" data-name="{{ med.name }}">
+            <button type="button" data-action="remove" aria-label="Take one {{ med.name }} out">{{ icon('minus') }}</button>
+            <output aria-live="polite">{{ med.quantity }}</output>
+            <button type="button" data-action="add" aria-label="Add one {{ med.name }}">{{ icon('plus') }}</button>
+          </div>
+        </td>
+        <td class="actions">
+          <form method="post" action="/inventory/remove/{{ med.name|urlencode }}" data-confirm="Remove {{ med.name }} and its stock history? This can't be undone.">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="icon-btn danger" type="submit" aria-label="Remove {{ med.name }}" title="Remove">{{ icon('trash') }}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel empty">
+  <strong>The inventory is empty</strong>
+  Add medicines one by one, or import a CSV.
+  <div><a class="btn btn-primary" href="/inventory/add">{{ icon('plus') }}Add medicine</a></div>
+</div>
+{% endif %}
+{% endblock %}

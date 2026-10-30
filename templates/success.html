@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Patient added{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<div class="panel result">
+  <div class="mark">{{ icon('check') }}</div>
+  <h1>Patient added</h1>
+  <p>The record is saved and searchable now.</p>
+  <div class="form-actions">
+    <a class="btn btn-primary" href="/add">{{ icon('plus') }}Add another</a>
+    <a class="btn btn-secondary" href="/view">See all patients</a>
+  </div>
+</div>
+{% endblock %}
