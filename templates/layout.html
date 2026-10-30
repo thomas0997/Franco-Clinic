@@ -32,7 +32,9 @@
         <a href="/index" {% if section == 'index' %}aria-current="page"{% endif %}>Dashboard</a>
         <a href="/patients" {% if section in ['patients','add','search','view','edit','register','results'] %}aria-current="page"{% endif %}>Patients</a>
         <a href="/inventory" {% if section == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
+        {% if is_admin %}
         <a href="/upload" {% if section == 'upload' %}aria-current="page"{% endif %}>Import &amp; export</a>
+        {% endif %}
       </nav>
 
       {% if session.get('name') %}
@@ -42,9 +44,15 @@
           <span class="user-label">{{ session['name'] }}</span>
         </button>
         <div class="user-pop" data-user-pop>
-          <a href="/reg1">Add a staff account</a>
+          {% if is_admin %}
+          <a href="/reg1">Staff accounts</a>
+          <a href="/admin/audit">Activity log</a>
           <hr>
-          <a class="signout" href="/logout">Sign out</a>
+          {% endif %}
+          <form method="post" action="/logout">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="signout" type="submit">Sign out</button>
+          </form>
         </div>
       </div>
       {% endif %}

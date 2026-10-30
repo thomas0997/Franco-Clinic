@@ -46,10 +46,12 @@
           </div>
         </td>
         <td class="actions">
-          <form method="post" action="/inventory/remove/{{ med.name|urlencode }}" data-confirm="Remove {{ med.name }} and its stock history? This can't be undone.">
+          {% if is_admin %}
+          <form method="post" action="/inventory/remove/{{ med.name|urlencode }}" data-confirm="Remove {{ med.name }} from inventory? Its stock history is kept.">
 <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
             <button class="icon-btn danger" type="submit" aria-label="Remove {{ med.name }}" title="Remove">{{ icon('trash') }}</button>
           </form>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}

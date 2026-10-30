@@ -1,27 +1,34 @@
 {% extends "layout.html" %}
 {% from "_icons.html" import icon %}
-{% block title %}Add a staff account{% endblock %}
+{% block title %}Staff accounts{% endblock %}
 {% block page_class %}page-narrow{% endblock %}
 
 {% block content %}
 <a class="back" href="/index">{{ icon('back') }}Dashboard</a>
 <div class="page-head">
   <div>
-    <h1>Add a staff account</h1>
-    <p>The new user signs in with this username and password.</p>
+    <h1>Staff accounts</h1>
+    <p>Staff can manage patients and stock. Admins can also import, export, remove records and add accounts.</p>
   </div>
 </div>
 
 <div class="panel">
   <form class="form" method="post" autocomplete="off">
-<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
     <div class="field">
       <label for="username">Username</label>
-      <input id="username" name="username" type="text" required autofocus autocapitalize="off">
+      <input id="username" name="username" type="text" required autofocus autocapitalize="off" maxlength="200">
     </div>
     <div class="field">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" required autocomplete="new-password">
+      <label for="password">Password (at least 10 characters)</label>
+      <input id="password" name="password" type="password" required minlength="10" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="role">Access</label>
+      <select id="role" name="role">
+        <option value="staff" selected>Staff</option>
+        <option value="admin">Admin</option>
+      </select>
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">{{ icon('user-plus') }}Create account</button>
@@ -29,4 +36,17 @@
     </div>
   </form>
 </div>
+
+{% if users %}
+<div class="table-wrap" style="margin-top:24px">
+  <table class="data">
+    <thead><tr><th>Username</th><th>Access</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr><td class="name">{{ u.username }}</td><td>{{ u.role|capitalize }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
 {% endblock %}

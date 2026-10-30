@@ -167,14 +167,22 @@ a:hover { color: var(--maroon); }
   display: none;
 }
 .user-pop.open { display: block; }
-.user-pop a {
+.user-pop a,
+.user-pop button {
   display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
   padding: 9px 12px;
   border-radius: var(--r-sm);
   color: var(--ink);
   text-decoration: none;
 }
-.user-pop a:hover { background: var(--paper); }
+.user-pop a:hover,
+.user-pop button:hover { background: var(--paper); }
 .user-pop hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0; }
 .user-pop .signout { color: var(--danger); }
 

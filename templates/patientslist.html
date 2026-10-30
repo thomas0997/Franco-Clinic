@@ -37,11 +37,13 @@
         <span><strong>All patients</strong><span>Browse and edit every record</span></span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
       </a>
+      {% if is_admin %}
       <a class="link-row" href="/upload">
         <span class="ico gold">{{ icon('swap') }}</span>
         <span><strong>Import &amp; export</strong><span>Move patient lists in or out as CSV</span></span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
       </a>
+      {% endif %}
     </div>
   </section>
 </div>

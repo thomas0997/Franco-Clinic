@@ -9,7 +9,7 @@
     <h1>Stock history</h1>
     <p>Changes made on the same day to the same medicine are combined into one line.</p>
   </div>
-  {% if logs %}
+  {% if logs and is_admin %}
   <div class="actions">
     <form method="post" action="/inventory/logs/clear" data-confirm="Delete the entire stock history? Counts stay the same, but this record can't be recovered.">
 <input type="hidden" name="_csrf" value="{{ csrf_token() }}">

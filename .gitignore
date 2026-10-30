@@ -228,3 +228,4 @@ instance/
 .env
 backups/
 !sample_data/*.csv
+.secret_key

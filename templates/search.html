@@ -34,10 +34,12 @@
           <td class="hide-sm">{{ patient.address }}</td>
           <td class="actions">
             <a class="btn btn-secondary btn-sm" href="/edit/{{ patient.id }}" aria-label="Edit {{ patient.firstName }} {{ patient.lastName }}">{{ icon('edit') }}<span class="label">Edit</span></a>
+            {% if is_admin %}
             <form action="/remove/{{ patient.id }}" method="post" data-confirm="Remove {{ patient.firstName }} {{ patient.lastName }}? This can't be undone.">
 <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
               <button class="icon-btn danger" type="submit" aria-label="Remove {{ patient.firstName }} {{ patient.lastName }}" title="Remove">{{ icon('trash') }}</button>
             </form>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
