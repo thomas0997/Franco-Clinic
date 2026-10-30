@@ -11,7 +11,10 @@ from urllib.parse import urlparse
 
 from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
                    request, send_file, session)
+from cachelib.file import FileSystemCache
 from flask_session import Session
+import pyotp
+import segno
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from init_db import MIN_PASSWORD_LENGTH, create_schema, ensure_admin
@@ -27,6 +30,10 @@ IDLE_TIMEOUT_SECONDS = 30 * 60          # sign out after 30 minutes of no activi
 LOGIN_MAX_FAILURES = 5                  # failed logins allowed...
 LOGIN_WINDOW_SECONDS = 15 * 60          # ...within this window before a lockout
 MAX_FIELD_LENGTH = 200
+TWO_FACTOR_PENDING_SECONDS = 5 * 60     # time allowed to enter the code after the password
+TOTP_ISSUER = "Franco Clinic"
+# Pages an admin can still reach before finishing two-factor setup.
+TWO_FACTOR_SETUP_ENDPOINTS = {"account_2fa", "logout", "static"}
 
 
 # ---------- SECRET KEY ----------
@@ -49,8 +56,8 @@ app.secret_key = load_secret_key()
 SECURE_COOKIES = os.environ.get("FLASK_INSECURE_COOKIES") != "1"
 app.config.update(
     SESSION_PERMANENT=False,
-    SESSION_TYPE="filesystem",
-    SESSION_FILE_DIR=os.path.join(DATA_DIR, "flask_session"),
+    SESSION_TYPE="cachelib",
+    SESSION_CACHELIB=FileSystemCache(os.path.join(DATA_DIR, "flask_session"), threshold=500, mode=0o600),
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=SECURE_COOKIES,
@@ -135,13 +142,18 @@ def load_user_and_check_session():
             flash("You were signed out after 30 minutes of inactivity.", "error")
         else:
             user = get_inventory_db().execute(
-                "SELECT id, username, role FROM users WHERE username = ?", (session["name"],)
+                "SELECT id, username, role, totp_secret FROM users WHERE username = ?", (session["name"],)
             ).fetchone()
             if user is None:  # account was removed
                 session.clear()
             else:
                 g.user = user
                 session["last_seen"] = now
+                # Admins must turn on two-factor login before doing anything else.
+                if (user["role"] == "admin" and not user["totp_secret"]
+                        and request.endpoint not in TWO_FACTOR_SETUP_ENDPOINTS):
+                    flash("Admins need two-factor login. Set it up to continue.", "error")
+                    return redirect("/account/2fa")
     return None
 
 
@@ -469,22 +481,114 @@ def login():
             return redirect("/login")
 
         user = get_inventory_db().execute(
-            "SELECT username, password_hash FROM users WHERE username = ?", (username,)).fetchone()
+            "SELECT username, password_hash, totp_secret FROM users WHERE username = ?", (username,)).fetchone()
         ok = check_password_hash(user["password_hash"] if user else _DUMMY_HASH, password)
 
         if user and ok:
-            clear_failed_logins(username)
-            session.clear()  # new session ID, so an old one can't be reused
-            session["name"] = user["username"]
-            session["last_seen"] = time.time()
-            audit("login")
-            return redirect("/index")
+            if user["totp_secret"]:
+                session.clear()
+                session["pending_2fa"] = user["username"]
+                session["pending_since"] = time.time()
+                return redirect("/login/2fa")
+            return complete_login(user["username"])
 
         record_failed_login(username)
         flash("Wrong username or password.", "error")
         return redirect("/login")
 
     return render_template("login.html")
+
+
+def complete_login(username):
+    clear_failed_logins(username)
+    session.clear()  # new session ID, so an old one can't be reused
+    session["name"] = username
+    session["last_seen"] = time.time()
+    audit("login")
+    return redirect("/index")
+
+
+def verify_totp(username, secret, code):
+    """Check a 6-digit code, allowing 30 s of clock drift, and refuse a code
+    that was already used (so a code seen over someone's shoulder can't be replayed)."""
+    code = (code or "").replace(" ", "")
+    if not (code.isdigit() and len(code) == 6):
+        return False
+    db = get_inventory_db()
+    last = db.execute("SELECT totp_last_step FROM users WHERE username = ?", (username,)).fetchone()
+    last_step = (last["totp_last_step"] if last else None) or -1
+    totp = pyotp.TOTP(secret)
+    now_step = int(time.time()) // totp.interval
+    for step in (now_step - 1, now_step, now_step + 1):
+        if step > last_step and secrets.compare_digest(totp.generate_otp(step), code):
+            db.execute("UPDATE users SET totp_last_step = ? WHERE username = ?", (step, username))
+            db.commit()
+            return True
+    return False
+
+
+@app.route("/login/2fa", methods=["GET", "POST"])
+def login_2fa():
+    username = session.get("pending_2fa")
+    if not username or time.time() - session.get("pending_since", 0) > TWO_FACTOR_PENDING_SECONDS:
+        session.clear()
+        flash("Sign in again.", "error")
+        return redirect("/login")
+
+    if request.method == "POST":
+        if login_locked(username):
+            session.clear()
+            flash("Too many failed sign-ins. Wait 15 minutes and try again.", "error")
+            return redirect("/login")
+        user = get_inventory_db().execute(
+            "SELECT totp_secret FROM users WHERE username = ?", (username,)).fetchone()
+        if user and user["totp_secret"] and verify_totp(username, user["totp_secret"], request.form.get("code")):
+            return complete_login(username)
+        record_failed_login(username)
+        flash("That code didn't work. Check your authenticator app and try again.", "error")
+        return redirect("/login/2fa")
+
+    return render_template("login_2fa.html")
+
+
+@app.route("/account/2fa", methods=["GET", "POST"])
+@login_required
+def account_2fa():
+    user = g.user
+    username = user["username"]
+    db = get_inventory_db()
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "enable" and not user["totp_secret"]:
+            secret = session.get("totp_setup")
+            if secret and verify_totp(username, secret, request.form.get("code")):
+                db.execute("UPDATE users SET totp_secret = ? WHERE username = ?", (secret, username))
+                db.commit()
+                session.pop("totp_setup", None)
+                audit("2fa.enable")
+                flash("Two-factor login is on. You'll need a code each time you sign in.")
+                return redirect("/index")
+            flash("That code didn't match. Scan the QR code again and enter the newest code.", "error")
+        elif action == "disable" and user["totp_secret"]:
+            if user["role"] == "admin":
+                flash("Admins must keep two-factor login on.", "error")
+            elif verify_totp(username, user["totp_secret"], request.form.get("code")):
+                db.execute("UPDATE users SET totp_secret = NULL WHERE username = ?", (username,))
+                db.commit()
+                audit("2fa.disable")
+                flash("Two-factor login is off.")
+            else:
+                flash("That code didn't work.", "error")
+        return redirect("/account/2fa")
+
+    qr = secret = None
+    if not user["totp_secret"]:
+        secret = session.get("totp_setup") or pyotp.random_base32()
+        session["totp_setup"] = secret
+        uri = pyotp.TOTP(secret).provisioning_uri(name=username, issuer_name=TOTP_ISSUER)
+        qr = segno.make(uri, error="m").svg_data_uri(scale=5, border=2)
+    return render_template("2fa.html", enabled=bool(user["totp_secret"]), qr=qr, secret=secret)
 
 
 @app.route("/logout", methods=["POST"])

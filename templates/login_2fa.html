@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon, trace %}
+{% block title %}Enter your code{% endblock %}
+
+{% block shell %}
+<div class="auth">
+  <section class="auth-side">
+    <div style="position:relative">
+      <img class="mark" src="{{ url_for('static', filename='logo.png') }}" alt="Franco Clinic logo">
+      <h1>Dra. Helen Franco Medical Clinic</h1>
+      <p>Patient records and medicine stock for the clinic team.</p>
+    </div>
+    <p class="auth-foot">Produced by Auron Inc.</p>
+    {{ trace() }}
+  </section>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      <h2>Enter your code</h2>
+      <p>Open your authenticator app and enter the 6-digit code for Franco Clinic.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flashes" role="alert">
+          {% for category, message in messages %}
+          <div class="flash {{ 'error' if category == 'error' else '' }}">{{ icon('alert' if category == 'error' else 'check') }}<span>{{ message }}</span></div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      <form class="form" method="post" action="/login/2fa" autocomplete="off">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="code">6-digit code</label>
+          <div class="input-icon">
+            {{ icon('lock') }}
+            <input id="code" type="text" name="code" required autofocus inputmode="numeric" pattern="[0-9 ]{6,7}" maxlength="7" autocomplete="one-time-code">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Verify</button>
+      </form>
+
+      <p class="note">Lost your phone? Ask the clinic admin to reset two-factor login for your account. <a href="/login">Back to sign in</a></p>
+    </div>
+  </main>
+</div>
+{% endblock %}

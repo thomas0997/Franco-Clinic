@@ -8,6 +8,7 @@ Command line (run from the app folder):
     python init_db.py create-user NAME        add a staff account (asks for password)
     python init_db.py create-user NAME --admin
     python init_db.py make-admin NAME         give an existing account admin rights
+    python init_db.py reset-2fa NAME          remove two-factor login (lost phone)
     python init_db.py list-users
 """
 import argparse
@@ -41,7 +42,9 @@ def create_schema(patients_path, inventory_path):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
-            role TEXT NOT NULL DEFAULT 'staff'
+            role TEXT NOT NULL DEFAULT 'staff',
+            totp_secret TEXT,
+            totp_last_step INTEGER
         );
         CREATE TABLE IF NOT EXISTS logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,8 +67,13 @@ def create_schema(patients_path, inventory_path):
         CREATE INDEX IF NOT EXISTS idx_login_attempts_key ON login_attempts(key);
         """)
         # Upgrade older databases that predate roles.
-        if "role" not in _columns(db, "users"):
+        cols = _columns(db, "users")
+        if "role" not in cols:
             db.execute("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'staff'")
+        if "totp_secret" not in cols:
+            db.execute("ALTER TABLE users ADD COLUMN totp_secret TEXT")
+        if "totp_last_step" not in cols:
+            db.execute("ALTER TABLE users ADD COLUMN totp_last_step INTEGER")
 
 
 def ensure_admin(inventory_path, username, password):
@@ -95,6 +103,8 @@ def _main():
     cu.add_argument("--admin", action="store_true")
     ma = sub.add_parser("make-admin")
     ma.add_argument("username")
+    rf = sub.add_parser("reset-2fa")
+    rf.add_argument("username")
     sub.add_parser("list-users")
     args = parser.parse_args()
 
@@ -118,9 +128,16 @@ def _main():
             if not cur.rowcount:
                 sys.exit(f"No user called {args.username}.")
             print(f"{args.username} is now an admin")
+        elif args.cmd == "reset-2fa":
+            cur = db.execute("UPDATE users SET totp_secret = NULL, totp_last_step = NULL WHERE username = ?",
+                             (args.username,))
+            if not cur.rowcount:
+                sys.exit(f"No user called {args.username}.")
+            print(f"Two-factor login removed for {args.username}. They must set it up again at next sign-in.")
         elif args.cmd == "list-users":
-            for name, role in db.execute("SELECT username, role FROM users ORDER BY id"):
-                print(f"{name:20} {role}")
+            rows = db.execute("SELECT username, role, totp_secret IS NOT NULL FROM users ORDER BY id")
+            for name, role, has_2fa in rows:
+                print(f"{name:20} {role:6} {'2FA on' if has_2fa else '2FA off'}")
     print(f"Databases ready in {data_dir}")
 
 

@@ -44,11 +44,12 @@
           <span class="user-label">{{ session['name'] }}</span>
         </button>
         <div class="user-pop" data-user-pop>
+          <a href="/account/2fa">Two-factor login</a>
           {% if is_admin %}
           <a href="/reg1">Staff accounts</a>
           <a href="/admin/audit">Activity log</a>
-          <hr>
           {% endif %}
+          <hr>
           <form method="post" action="/logout">
             <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
             <button class="signout" type="submit">Sign out</button>

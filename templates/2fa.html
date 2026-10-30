@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Two-factor login{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<a class="back" href="/index">{{ icon('back') }}Dashboard</a>
+<div class="page-head">
+  <div>
+    <h1>Two-factor login</h1>
+    {% if enabled %}
+    <p>On. You enter a code from your authenticator app every time you sign in.</p>
+    {% else %}
+    <p>Adds a 6-digit code from your phone to every sign-in, so a stolen password alone can't open your account.{% if is_admin %} Required for admins.{% endif %}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="panel">
+{% if enabled %}
+  {% if is_admin %}
+  <p>Admins must keep two-factor login on. If you lose your phone, run <code>python init_db.py reset-2fa {{ current_user.username }}</code> on the server.</p>
+  {% else %}
+  <form class="form" method="post" autocomplete="off">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="disable">
+    <div class="field">
+      <label for="code">Current 6-digit code</label>
+      <input id="code" name="code" type="text" inputmode="numeric" required maxlength="7" autocomplete="one-time-code">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger">Turn off two-factor login</button>
+    </div>
+  </form>
+  {% endif %}
+{% else %}
+  <ol>
+    <li>Install an authenticator app such as Google Authenticator, Microsoft Authenticator or 2FAS.</li>
+    <li>Scan this QR code with the app.</li>
+    <li>Enter the 6-digit code the app shows.</li>
+  </ol>
+  <p style="text-align:center"><img src="{{ qr }}" alt="QR code for your authenticator app" width="220" height="220"></p>
+  <p>Can't scan? Enter this key in the app instead: <code style="word-break:break-all">{{ secret }}</code></p>
+  <form class="form" method="post" autocomplete="off">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="enable">
+    <div class="field">
+      <label for="code">6-digit code</label>
+      <input id="code" name="code" type="text" inputmode="numeric" required autofocus maxlength="7" autocomplete="one-time-code">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Turn on two-factor login</button>
+    </div>
+  </form>
+{% endif %}
+</div>
+{% endblock %}
